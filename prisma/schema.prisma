@@ -9,3 +9,79 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  hashPassword String
+  RThash       String?
+  profileImage String
+  confirmed    Boolean       @default(false)
+  Role         Role?         @relation(fields: [RoleId], references: [id])
+  RoleId       String
+  location     Locations?    @relation(fields: [locationId], references: [id])
+  locationId   String?
+  UserCkeckin  UserCkeckin[]
+
+  @@map("users")
+}
+
+model Role {
+  id    String @id @default(uuid())
+  name  String
+  users User[]
+
+  @@map("roles")
+}
+
+model Locations {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  logoImage String
+  active    Boolean   @default(false)
+  users     User[]
+  workouts  Workout[]
+
+  @@map("locations")
+}
+
+model Workout {
+  id         String     @id @default(uuid())
+  title      String
+  data       DateTime
+  location   Locations  @relation(fields: [locationId], references: [id])
+  locationId String
+  wodClass   WodClass[]
+
+  @@map("workouts")
+}
+
+model WodClass {
+  id        String    @id @default(uuid())
+  workout   Workout   @relation(fields: [workoutId], references: [id])
+  workoutId String
+  time      Int
+  wodClass  checkIn[]
+
+  @@map("wod_class")
+}
+
+model checkIn {
+  id         String   @id @default(uuid())
+  check_in   WodClass @relation(fields: [check_inId], references: [id])
+  check_inId String
+  limit      Int
+  UserCkeckin UserCkeckin[]
+
+  @@map("check_in")
+}
+
+model UserCkeckin {
+  id             String  @id @default(uuid())
+  user           User    @relation(fields: [userId], references: [id])
+  userId         String
+  checkinClass   checkIn @relation(fields: [checkinClassId], references: [id])
+  checkinClassId String
+  @@map("user_checkins")
+}
