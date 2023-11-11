@@ -16,10 +16,10 @@ model User {
   email        String        @unique
   hashPassword String
   RThash       String?
-  profileImage String
+  profileImage String?
   confirmed    Boolean       @default(false)
   Role         Role?         @relation(fields: [RoleId], references: [id])
-  RoleId       String
+  RoleId       String?
   location     Locations?    @relation(fields: [locationId], references: [id])
   locationId   String?
   UserCkeckin  UserCkeckin[]
