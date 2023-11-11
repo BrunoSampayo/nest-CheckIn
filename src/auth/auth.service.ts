@@ -48,7 +48,9 @@ export class AuthService {
 
 
 
-    signinLocal() { }
+    signinLocal(dto:AuthDto) { 
+
+    }
     logout() { }
     refreshTokens() { }
 
