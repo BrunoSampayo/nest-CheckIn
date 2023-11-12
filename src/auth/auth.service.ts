@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AuthDto } from './dto';
+import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcrypt';
 import { Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
@@ -14,13 +14,13 @@ export class AuthService {
 
 
 
-    async signupLocal(dto: AuthDto): Promise<Tokens> {
+    async signupLocal(dto: AuthSignUpDto): Promise<Tokens> {
         const userCheck = await this.prisma.user.findUnique({
-            where:{
+            where: {
                 email: dto.email
             }
         })
-        if(userCheck) throw new HttpException("User alredy exist",HttpStatus.CONFLICT)
+        if (userCheck) throw new HttpException("User alredy exist", HttpStatus.CONFLICT)
         const hash = await this.hashData(dto.password)
         const newUser = await this.prisma.user.create({
             data: {
@@ -29,7 +29,7 @@ export class AuthService {
                 hashPassword: hash
             }
         })
-        
+
         const tokens = await this.getTokens(newUser.id, newUser.email, newUser.RoleId)
         await this.updateRtHash(newUser.id, tokens.refresh_token)
         return tokens
@@ -48,11 +48,36 @@ export class AuthService {
 
 
 
-    signinLocal(dto:AuthDto) { 
+    async signinLocal(dto: AuthSignInDto): Promise<Tokens> {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                email: dto.email
+            }
+        })
 
+        if (!user) throw new HttpException("Email or password incorrect", HttpStatus.UNAUTHORIZED)
+
+        const hashCompare = await bcrypt.compare(dto.password, user.hashPassword)
+        if (hashCompare === false) throw new HttpException("Email or password incorrect", HttpStatus.UNAUTHORIZED)
+
+        const tokens = await this.getTokens(user.id, user.email, user.RoleId)
+        await this.updateRtHash(user.id, tokens.refresh_token)
+        return tokens
     }
-    logout() { }
-    refreshTokens() { }
+
+    async logout(userid:string) {
+        await this.prisma.user.update({
+            where:{
+                id: userid,
+                RThash:{
+                    not:null
+                }
+            },data:{
+                RThash:null
+            }
+        })
+     }
+    async refreshTokens() { }
 
 
 
@@ -91,7 +116,7 @@ export class AuthService {
         }
 
     }
-   
+
 
 
 
