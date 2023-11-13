@@ -66,6 +66,12 @@ export class AuthService {
     }
 
     async logout(userid:string) {
+        const checkRTHash = await this.prisma.user.findUnique({
+            where:{
+                id:userid
+            }
+        })
+        if(checkRTHash.RThash === null) throw new HttpException ("Something wrong", HttpStatus.FORBIDDEN)
         await this.prisma.user.update({
             where:{
                 id: userid,
