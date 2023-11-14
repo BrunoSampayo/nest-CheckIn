@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcrypt';
@@ -65,25 +65,41 @@ export class AuthService {
         return tokens
     }
 
-    async logout(userid:string) {
+    async logout(userid: string) {
         const checkRTHash = await this.prisma.user.findUnique({
-            where:{
-                id:userid
+            where: {
+                id: userid
             }
         })
-        if(checkRTHash.RThash === null) throw new HttpException ("Something wrong", HttpStatus.FORBIDDEN)
+        if (checkRTHash.RThash === null) throw new HttpException("Something wrong", HttpStatus.FORBIDDEN)
         await this.prisma.user.update({
-            where:{
+            where: {
                 id: userid,
-                RThash:{
-                    not:null
+                RThash: {
+                    not: null
                 }
-            },data:{
-                RThash:null
+            }, data: {
+                RThash: null
             }
         })
-     }
-    async refreshTokens() { }
+    }
+
+    async refreshTokens(userId: string, rt: string) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+        if (!user) throw new ForbiddenException("Acces Denied")
+
+        const rtMathces  = await bcrypt.compare(rt,user.RThash)
+
+        if(!rtMathces) throw new ForbiddenException("Acces Denied")
+
+        const tokens = await this.getTokens(user.id, user.email, user.RoleId)
+        await this.updateRtHash(user.id, tokens.refresh_token)
+        return tokens
+    }
 
 
 
