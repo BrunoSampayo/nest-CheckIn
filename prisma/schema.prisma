@@ -19,7 +19,7 @@ model User {
   profileImage String?
   confirmed    Boolean       @default(false)
   Role         Role?         @relation(fields: [RoleId], references: [id])
-  RoleId       String?
+  RoleId       Int?
   location     Locations?    @relation(fields: [locationId], references: [id])
   locationId   String?
   UserCkeckin  UserCkeckin[]
@@ -28,8 +28,8 @@ model User {
 }
 
 model Role {
-  id    String @id @default(uuid())
-  name  String
+  id    Int @id @default(autoincrement())
+  name  String 
   users User[]
 
   @@map("roles")
