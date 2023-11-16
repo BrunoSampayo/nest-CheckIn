@@ -112,7 +112,7 @@ export class AuthService {
         return await bcrypt.hash(data, 10)
     }
 
-    async getTokens(userId: string, email: string, role?: string) {
+    async getTokens(userId: string, email: string, role?: Number) {
         const [at, rt] = await Promise.all([
             this.jwtService.signAsync({
                 sub: userId,

@@ -5,7 +5,7 @@ import { Injectable } from "@nestjs/common/decorators";
 type JwtPayload = {
     sub:string,
     email:string,
-    Role:string | null
+    Role:Number | null
 }
 
 @Injectable()
