@@ -11,39 +11,50 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  name         String
-  email        String        @unique
-  hashPassword String
-  RThash       String?
-  profileImage String?
-  confirmed    Boolean       @default(false)
-  Role         Role?         @relation(fields: [RoleId], references: [id])
-  RoleId       Int?
-  location     Locations?    @relation(fields: [locationId], references: [id])
-  locationId   String?
-  UserCkeckin  UserCkeckin[]
+  id                      String                    @id @default(uuid())
+  name                    String
+  email                   String                    @unique
+  hashPassword            String
+  RThash                  String?
+  profileImage            String?
+  confirmed               Boolean                   @default(false)
+  admins                  Boolean                   @default(false)
+  location                Locations?                @relation(fields: [locationId], references: [id])
+  locationId              String?
+  UserCkeckin             UserCkeckin[]
+  Location_Administration Location_Administration[]
 
   @@map("users")
 }
 
-model Role {
-  id    Int @id @default(autoincrement())
-  name  String 
-  users User[]
-
-  @@map("roles")
-}
-
 model Locations {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  logoImage String
-  active    Boolean   @default(false)
-  users     User[]
-  workouts  Workout[]
+  id                      String                    @id @default(uuid())
+  name                    String                    @unique
+  logoImage               String
+  active                  Boolean                   @default(false)
+  users                   User[]
+  workouts                Workout[]
+  Location_Administration Location_Administration[]
 
   @@map("locations")
+}
+
+model Location_Administration {
+  id         String    @id @default(uuid())
+  location   Locations @relation(fields: [locationId], references: [id])
+  locationId String
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String
+  position   String
+
+  @@map("location_administration")
+}
+
+model Location_Positions {
+  id   String @id @default(uuid())
+  name String @unique
+
+  @@map("location_positions")
 }
 
 model Workout {
@@ -68,10 +79,10 @@ model WodClass {
 }
 
 model checkIn {
-  id         String   @id @default(uuid())
-  check_in   WodClass @relation(fields: [check_inId], references: [id])
-  check_inId String
-  limit      Int
+  id          String        @id @default(uuid())
+  check_in    WodClass      @relation(fields: [check_inId], references: [id])
+  check_inId  String
+  limit       Int
   UserCkeckin UserCkeckin[]
 
   @@map("check_in")
@@ -83,5 +94,6 @@ model UserCkeckin {
   userId         String
   checkinClass   checkIn @relation(fields: [checkinClassId], references: [id])
   checkinClassId String
+
   @@map("user_checkins")
 }

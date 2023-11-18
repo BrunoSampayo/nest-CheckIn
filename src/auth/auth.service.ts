@@ -30,7 +30,7 @@ export class AuthService {
             }
         })
 
-        const tokens = await this.getTokens(newUser.id, newUser.email, newUser.RoleId)
+        const tokens = await this.getTokens(newUser.id, newUser.email, newUser.admins)
         await this.updateRtHash(newUser.id, tokens.refresh_token)
         return tokens
     }
@@ -60,7 +60,7 @@ export class AuthService {
         const hashCompare = await bcrypt.compare(dto.password, user.hashPassword)
         if (hashCompare === false) throw new HttpException("Email or password incorrect", HttpStatus.UNAUTHORIZED)
 
-        const tokens = await this.getTokens(user.id, user.email, user.RoleId)
+        const tokens = await this.getTokens(user.id, user.email, user.admins)
         await this.updateRtHash(user.id, tokens.refresh_token)
         return tokens
     }
@@ -96,7 +96,7 @@ export class AuthService {
 
         if(!rtMathces) throw new ForbiddenException("Acces Denied")
 
-        const tokens = await this.getTokens(user.id, user.email, user.RoleId)
+        const tokens = await this.getTokens(user.id, user.email, user.admins)
         await this.updateRtHash(user.id, tokens.refresh_token)
         return tokens
     }
@@ -112,12 +112,12 @@ export class AuthService {
         return await bcrypt.hash(data, 10)
     }
 
-    async getTokens(userId: string, email: string, role?: Number) {
+    async getTokens(userId: string, email: string, admins: boolean) {
         const [at, rt] = await Promise.all([
             this.jwtService.signAsync({
                 sub: userId,
                 email,
-                role
+                admins
             }, {
                 secret: process.env.AT_SECRET,
                 expiresIn: 60 * 15, //15 minutes 
@@ -126,7 +126,7 @@ export class AuthService {
             this.jwtService.signAsync({
                 sub: userId,
                 email,
-                role
+                admins
             }, {
                 secret: process.env.RT_SECRET,
                 expiresIn: 60 * 60 * 24 * 7, //one week
