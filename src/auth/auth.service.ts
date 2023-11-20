@@ -9,31 +9,7 @@ import { networkInterfaces } from 'os';
 export class AuthService {
     constructor(private prisma: PrismaService,
         private jwtService: JwtService) { }
-
-
-
-
-
-    async signupLocal(dto: AuthSignUpDto): Promise<Tokens> {
-        const userCheck = await this.prisma.user.findUnique({
-            where: {
-                email: dto.email
-            }
-        })
-        if (userCheck) throw new HttpException("User alredy exist", HttpStatus.CONFLICT)
-        const hash = await this.hashData(dto.password)
-        const newUser = await this.prisma.user.create({
-            data: {
-                name: dto.name,
-                email: dto.email,
-                hashPassword: hash
-            }
-        })
-
-        const tokens = await this.getTokens(newUser.id, newUser.email, newUser.admins)
-        await this.updateRtHash(newUser.id, tokens.refresh_token)
-        return tokens
-    }
+  
     async updateRtHash(userId: string, rt: string) {
         const hash = await this.hashData(rt)
         await this.prisma.user.update({

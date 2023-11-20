@@ -9,11 +9,7 @@ import { GetCurrentUserId, GetCurrentUser, Public } from 'src/commom/decorators'
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-    @Post('local/signup')
-    @HttpCode(HttpStatus.CREATED)
-    signupLocal(@Body() dto: AuthSignUpDto): Promise<Tokens> {
-        return this.authService.signupLocal(dto)
-    }
+   
 
     @Public()
     @Post('local/signin')
