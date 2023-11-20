@@ -14,9 +14,9 @@ export class UsersService {
       }
     })
     if (userCheck) throw new ForbiddenException("User alredy exist")
-    
+
     const hash = await this.hashData(createUserDto.password)
-  
+
     const newUser = await this.prisma.user.create({
       data: {
         name: createUserDto.name,
@@ -36,8 +36,19 @@ export class UsersService {
 
 
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id
+      }
+    })
+    if (!user) throw new ForbiddenException("User not found")
+
+    await this.prisma.user.update({
+      where: {
+        id: id
+      }, data: updateUserDto
+    })
   }
 
   remove(id: number) {
